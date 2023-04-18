@@ -1,0 +1,6 @@
+Los componentes se definen como si fueran funciones y no como clases y objetos
+
+Lo que retornan son elementos u otros componentes, aunque la estructura es similar al html, no es html
+es react que usa javascript y eventualmente se transforma a html para que el navegador lo pueda leer
+esa tranformación la hace react
+

@@ -1,0 +1,327 @@
+TABLA PRODUCTO
+
+create table producto(
+id_producto int primary key identity,
+nombre nvarchar(20) unique not null,
+precio decimal(10,2) not null,
+cantidad int not null,
+existencia int not null,
+creado datetime2(7) not null,
+creado_por int not null,
+actualizado datetime2(7) null,
+actualizado_por int null
+)
+
+
+PROCEDIMIENTO ALMACENADO PRODUCTO
+CREATE PROCEDURE Crud_Producto
+	@id_producto int = NULL ,
+	@nombre nvarchar(20) = NULL,
+	@precio decimal(10,2) =NULL,
+	@cantidad int = NULL,
+	@existencia int = NULL,
+ 	@usuario int = NULL,
+ 	@opcion int
+ 	as 
+ 	begin
+ 		--opcion uno sirve registrar un producto
+ 		if @opcion = 1
+ 			begin try
+ 				begin transaction
+ 					INSERT INTO producto(nombre, precio, cantidad, existencia, creado, creado_por)
+ 					VALUES 
+ 					(
+ 					@nombre,
+					@precio,
+					@cantidad,
+					1,
+					GETDATE(),
+ 					@usuario
+ 					)
+					SELECT @@IDENTITY
+ 				commit transaction
+ 			end try
+ 			begin catch
+ 				ROLLBACK
+ 				SELECT ERROR_NUMBER()as error 
+ 			end catch
+ 		-- opcion dos sirve para modificar un producto por medio del id 
+ 		if @opcion = 2
+ 			begin try
+ 				begin transaction
+ 					UPDATE producto 
+ 						SET nombre= isnull (@nombre, nombre),
+							precio = isnull(@precio, precio),
+							cantidad = isnull(@cantidad, cantidad),
+ 							actualizado_por = @usuario, 
+ 							actualizado = GETDATE()
+ 							WHERE id_producto = @id_producto
+ 				commit transaction
+ 			end try
+ 			begin catch
+ 				ROLLBACK
+ 				SELECT ERROR_NUMBER()as error 
+ 			end catch
+ 			-- opcion tres sirve para modificar la existencia de un producto por id
+ 		if @opcion = 3
+ 			begin try
+ 				begin transaction
+ 					UPDATE producto 
+ 						SET existencia=@existencia,
+ 							actualizado_por = @usuario, 
+ 							actualizado = GETDATE()
+ 							WHERE id_producto = @id_producto
+ 				commit transaction
+ 			end try
+ 			begin catch
+ 				ROLLBACK
+ 				SELECT ERROR_NUMBER()as error 
+ 			end catch
+ 			-- opcion cuatro sirve para devolver todos los productos sin importar su existencia 
+ 		if @opcion = 4
+ 			begin
+ 				SELECT id_producto, nombre, precio, cantidad, existencia, CONVERT(nvarchar(10),creado,103)as creado 
+ 				FROM producto 
+ 			end
+ 			-- opcion cinco sirve para devolver un solo producto por medio del id 
+ 		if @opcion = 5
+ 			begin
+ 				SELECT id_producto, nombre, precio, cantidad, existencia, CONVERT(nvarchar(10),creado,103)as creado 
+ 				FROM producto WHERE id_producto = @id_producto 
+ 			end
+
+ 		if @opcion = 6
+ 			begin
+ 				SELECT 
+				id_producto as value, 
+				nombre as label
+ 				FROM producto 
+ 			end
+ 	end
+
+
+
+PRUEBAS PROCEDIMIENTOS PRODUCTO
+--exec Crud_Producto @opcion=1, @nombre='Detergente', @precio= 10.5, @cantidad=23, @usuario=1
+--exec Crud_Producto @opcion=1, @nombre='Jabón', @precio= 18.35, @cantidad=50, @usuario=1
+--exec Crud_Producto @opcion=2, @id_producto=1, @precio= 5.5, @cantidad=12, @usuario=1
+--exec Crud_Producto @opcion=3, @id_producto=2, @existencia=0
+exec Crud_Producto @opcion=4
+exec Crud_Producto @opcion=5, @id_producto=2
+
+
+TABLA DEPARTAMENTO
+create table departamento(
+id int primary key identity,
+nombre nvarchar(20) unique not null,
+cod_postal int unique not null,
+estado int not null,
+creado datetime2(7) not null,
+creado_por int not null,
+actualizado datetime2(7) null,
+actualizado_por int null
+)
+
+
+
+TABLA MUNICIPIO
+create table municipio(
+id int primary key identity,
+nombre nvarchar(20) unique not null,
+cod_postal int unique not null,
+departamento nvarchar(20) not null,
+estado int not null,
+creado datetime2(7) not null,
+creado_por int not null,
+actualizado datetime2(7) null,
+actualizado_por int null
+)
+
+
+PROCEDIMIENTO ALMACENADO MUNICIPIO
+CREATE PROCEDURE Crud_Municipio
+	@id int = NULL ,
+	@nombre nvarchar(20) = NULL,
+	@cod_postal int =NULL,
+	@departamento nvarchar(20) = NULL,
+	@estado int = NULL,
+ 	@usuario int = NULL,
+ 	@opcion int
+ 	as 
+ 	begin
+ 		--opcion uno sirve registrar un municipio
+ 		if @opcion = 1
+ 			begin try
+ 				begin transaction
+ 					INSERT INTO municipio(nombre, cod_postal, departamento, estado, creado, creado_por)
+ 					VALUES 
+ 					(
+ 					@nombre,
+					@cod_postal,
+					@departamento,
+					1,
+					GETDATE(),
+ 					@usuario
+ 					)
+					SELECT @@IDENTITY
+ 				commit transaction
+ 			end try
+ 			begin catch
+ 				ROLLBACK
+ 				SELECT ERROR_NUMBER()as error 
+ 			end catch
+ 		-- opcion dos sirve para modificar un municipio por medio del id 
+ 		if @opcion = 2
+ 			begin try
+ 				begin transaction
+ 					UPDATE municipio 
+ 						SET nombre= isnull (@nombre, nombre),
+							cod_postal = isnull(@cod_postal, cod_postal),
+							departamento = isnull(@departamento, departamento),
+ 							actualizado = GETDATE(),
+							actualizado_por = @usuario
+ 							WHERE id = @id
+ 				commit transaction
+ 			end try
+ 			begin catch
+ 				ROLLBACK
+ 				SELECT ERROR_NUMBER()as error 
+ 			end catch
+ 			-- opcion tres sirve para modificar la existencia de un producto por id
+ 		if @opcion = 3
+ 			begin try
+ 				begin transaction
+ 					UPDATE municipio 
+ 						SET estado=@estado,
+ 							actualizado_por = @usuario, 
+ 							actualizado = GETDATE()
+ 							WHERE id = @id
+ 				commit transaction
+ 			end try
+ 			begin catch
+ 				ROLLBACK
+ 				SELECT ERROR_NUMBER()as error 
+ 			end catch
+ 			-- opcion cuatro sirve para devolver todos los productos sin importar su existencia 
+ 		if @opcion = 4
+ 			begin
+ 				SELECT id, nombre, cod_postal, departamento, estado, CONVERT(nvarchar(10),creado,103)as creado 
+ 				FROM municipio 
+ 			end
+ 			-- opcion cinco sirve para devolver un solo producto por medio del id 
+ 		if @opcion = 5
+ 			begin
+ 				SELECT id, nombre, cod_postal, departamento, estado, CONVERT(nvarchar(10),creado,103)as creado 
+ 				FROM municipio WHERE id = @id 
+ 			end
+
+ 		if @opcion = 6
+ 			begin
+ 				SELECT 
+				id as value, 
+				nombre as label
+ 				FROM municipio 
+ 			end
+ 	end
+
+
+PRUEBAS MUNICIPIO
+--exec Crud_Municipio @opcion=1, @nombre='Zona 1', @cod_postal= 01001, @departamento='Guatemala', @usuario=1
+--exec Crud_Municipio @opcion=1, @nombre='Zona 13', @cod_postal= 01013, @departamento='Guatemala', @usuario=1
+--exec Crud_Municipio @opcion=2, @id=1, @nombre='Zona 11', @cod_postal= 01011, @departamento='Guatemala', @usuario=1
+--exec Crud_Municipio @opcion=3, @id=2, @estado=0
+--exec Crud_Municipio @opcion=4
+--exec Crud_Municipio @opcion=5, @id=2
+
+
+PROCEDIMIENTO ALMACENADO DEPARTAMENTO
+CREATE PROCEDURE Crud_Departamento	
+	@id int = NULL ,
+	@nombre nvarchar(20) = NULL,
+	@cod_postal int =NULL,
+	@estado int = NULL,
+ 	@usuario int = NULL,
+ 	@opcion int
+ 	as 
+ 	begin
+ 		--opcion uno sirve registrar un departamento
+ 		if @opcion = 1
+ 			begin try
+ 				begin transaction
+ 					INSERT INTO departamento(nombre, cod_postal, estado, creado, creado_por)
+ 					VALUES 
+ 					(
+ 					@nombre,
+					@cod_postal,
+					1,
+					GETDATE(),
+ 					@usuario
+ 					)
+					SELECT @@IDENTITY
+ 				commit transaction
+ 			end try
+ 			begin catch
+ 				ROLLBACK
+ 				SELECT ERROR_NUMBER()as error 
+ 			end catch
+ 		-- opcion dos sirve para modificar un departamento por medio del id 
+ 		if @opcion = 2
+ 			begin try
+ 				begin transaction
+ 					UPDATE departamento 
+ 						SET nombre= isnull (@nombre, nombre),
+							cod_postal = isnull(@cod_postal, cod_postal),
+ 							actualizado = GETDATE(),
+							actualizado_por = @usuario
+ 							WHERE id = @id
+ 				commit transaction
+ 			end try
+ 			begin catch
+ 				ROLLBACK
+ 				SELECT ERROR_NUMBER()as error 
+ 			end catch
+ 			-- opcion tres sirve para modificar el estado de un departamento por id
+ 		if @opcion = 3
+ 			begin try
+ 				begin transaction
+ 					UPDATE departamento 
+ 						SET estado=@estado,
+ 							actualizado_por = @usuario, 
+ 							actualizado = GETDATE()
+ 							WHERE id = @id
+ 				commit transaction
+ 			end try
+ 			begin catch
+ 				ROLLBACK
+ 				SELECT ERROR_NUMBER()as error 
+ 			end catch
+ 			-- opcion cuatro sirve para devolver todos los departamentos sin importar su existencia 
+ 		if @opcion = 4
+ 			begin
+ 				SELECT id, nombre, cod_postal, estado, CONVERT(nvarchar(10),creado,103)as creado 
+ 				FROM departamento 
+ 			end
+ 			-- opcion cinco sirve para devolver un solo producto por medio del id 
+ 		if @opcion = 5
+ 			begin
+ 				SELECT id, nombre, cod_postal, estado, CONVERT(nvarchar(10),creado,103)as creado 
+ 				FROM departamento WHERE id = @id 
+ 			end
+
+ 		if @opcion = 6
+ 			begin
+ 				SELECT 
+				id as value, 
+				nombre as label
+ 				FROM departamento 
+ 			end
+ 	end
+
+
+PRUEBAS DEPARTAMENTO
+--exec Crud_Departamento @opcion=1, @nombre='Guatemala', @cod_postal= 01, @usuario=1
+--exec Crud_Departamento @opcion=1, @nombre='Escuintla', @cod_postal= 05, @usuario=1
+exec Crud_Departamento @opcion=2, @id=1, @nombre='Guatemala', @cod_postal= 01, @usuario=1
+exec Crud_Departamento @opcion=3, @id=2, @estado=0
+exec Crud_Departamento @opcion=4
+exec Crud_Departamento @opcion=5, @id=2
